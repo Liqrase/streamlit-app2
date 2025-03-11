@@ -18,7 +18,8 @@ def initialize_game():
         "syojiPrice": 1000,
         "getList": [],
         "keihinPlace": keihinPlace,
-        "count": 0
+        "count": 0,
+        "position": (1, 1)  # 初期位置を追加
     }
 
 def win(i):
@@ -55,26 +56,26 @@ st.write(f"### 所持金: {game['syojiPrice']}円")
 st.write(f"### 獲得アイテム: {', '.join(game['getList']) if game['getList'] else 'なし'}")
 
 if game["syojiPrice"] >= 100:
+    x = st.slider("右に何マス進みますか？", min_value=1, max_value=10, step=1)
+    y = st.slider("奥に何マス進みますか？", min_value=1, max_value=10, step=1)
+    
     if st.button("クレーンゲームをプレイする (100円)"):
         game["syojiPrice"] -= 100
         game["count"] += 1
+        game["position"] = (x, y)
+        
         st.write(f"{game['count']}回目のプレイ！")
-        
-        x = st.number_input("右に何マス進みますか？", min_value=1, max_value=10, step=1)
-        y = st.number_input("奥に何マス進みますか？", min_value=1, max_value=10, step=1)
-        position = (x, y)
-        
         st.write(win(x))
         st.write(win(y))
-
-        if position in game["keihinPlace"]:
-            st.write(f"クレーンは座標{position}に移動し、腕を降ろした…。")
+        
+        if game["position"] in game["keihinPlace"]:
+            st.write(f"クレーンは座標{game['position']}に移動し、腕を降ろした…。")
             st.write("ウィ～～ン……ガシッ！")
-            st.write(f"あなたは{game['keihinPlace'][position]}をゲットした！")
-            game["getList"].append(game['keihinPlace'][position])
-            del game["keihinPlace"][position]
+            st.write(f"あなたは{game['keihinPlace'][game['position']]}をゲットした！")
+            game["getList"].append(game['keihinPlace'][game['position']])
+            del game["keihinPlace"][game["position"]]
         else:
-            st.write(f"クレーンは座標{position}に移動し、腕を降ろした…。")
+            st.write(f"クレーンは座標{game['position']}に移動し、腕を降ろした…。")
             st.write("ウィ～～ン……スカッ！")
             st.write("あなたは何も手に入れることが出来なかった…。")
 else:
