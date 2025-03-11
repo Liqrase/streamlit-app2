@@ -19,7 +19,8 @@ def initialize_game():
         "getList": [],
         "keihinPlace": keihinPlace,
         "count": 0,
-        "position": (1, 1)  # 初期位置を追加
+        "position": (1, 1),  # 初期位置を追加
+        "playing": True  # プレイ中かどうかを管理
     }
 
 def win(i):
@@ -41,7 +42,7 @@ def sell(syojiPrice, getList):
     getMoney = sum(urine[item] for item in getList)
     new_price = syojiPrice + getMoney
     profit = new_price - 1000
-    return new_price, getMoney, profit
+    return new_price, getMoney, profit, urine
 
 # StreamlitのUI部分
 st.title("クレーンゲーム")
@@ -55,31 +56,45 @@ game = st.session_state.game
 st.write(f"### 所持金: {game['syojiPrice']}円")
 st.write(f"### 獲得アイテム: {', '.join(game['getList']) if game['getList'] else 'なし'}")
 
-if game["syojiPrice"] >= 100:
-    x = st.slider("右に何マス進みますか？", min_value=1, max_value=10, step=1)
-    y = st.slider("奥に何マス進みますか？", min_value=1, max_value=10, step=1)
+st.write("### 景品価格表")
+st.write("- ヒチュー: 200円")
+st.write("- ヒカチュウ: 500円")
+st.write("- ハイチュウ: 7円")
+
+if game["playing"]:
+    if st.button("ゲームを終了する"):
+        game["playing"] = False
+        new_price, getMoney, profit, urine = sell(game["syojiPrice"], game["getList"])
+        st.write("ゲームを終了しました。")
+        st.write(f"売却価格: {getMoney}円")
+        st.write(f"最終所持金: {new_price}円 ({'利益' if profit >= 0 else '損失'}: {abs(profit)}円)")
     
-    if st.button("クレーンゲームをプレイする (100円)"):
-        game["syojiPrice"] -= 100
-        game["count"] += 1
-        game["position"] = (x, y)
+    if game["syojiPrice"] >= 100:
+        x = st.slider("右に何マス進みますか？", min_value=1, max_value=10, step=1)
+        y = st.slider("奥に何マス進みますか？", min_value=1, max_value=10, step=1)
         
-        st.write(f"{game['count']}回目のプレイ！")
-        st.write(win(x))
-        st.write(win(y))
-        
-        if game["position"] in game["keihinPlace"]:
-            st.write(f"クレーンは座標{game['position']}に移動し、腕を降ろした…。")
-            st.write("ウィ～～ン……ガシッ！")
-            st.write(f"あなたは{game['keihinPlace'][game['position']]}をゲットした！")
-            game["getList"].append(game['keihinPlace'][game['position']])
-            del game["keihinPlace"][game["position"]]
-        else:
-            st.write(f"クレーンは座標{game['position']}に移動し、腕を降ろした…。")
-            st.write("ウィ～～ン……スカッ！")
-            st.write("あなたは何も手に入れることが出来なかった…。")
-else:
-    st.write("所持金が足りません…。ゲームを終了します。")
-    new_price, getMoney, profit = sell(game["syojiPrice"], game["getList"])
-    st.write(f"売却価格: {getMoney}円")
-    st.write(f"最終所持金: {new_price}円 ({'利益' if profit >= 0 else '損失'}: {abs(profit)}円)")
+        if st.button("クレーンゲームをプレイする (100円)"):
+            game["syojiPrice"] -= 100
+            game["count"] += 1
+            game["position"] = (x, y)
+            
+            st.write(f"{game['count']}回目のプレイ！")
+            st.write(win(x))
+            st.write(win(y))
+            
+            if game["position"] in game["keihinPlace"]:
+                st.write(f"クレーンは座標{game['position']}に移動し、腕を降ろした…。")
+                st.write("ウィ～～ン……ガシッ！")
+                st.write(f"あなたは{game['keihinPlace'][game['position']]}をゲットした！")
+                game["getList"].append(game['keihinPlace'][game['position']])
+                del game["keihinPlace"][game["position"]]
+            else:
+                st.write(f"クレーンは座標{game['position']}に移動し、腕を降ろした…。")
+                st.write("ウィ～～ン……スカッ！")
+                st.write("あなたは何も手に入れることが出来なかった…。")
+    else:
+        st.write("所持金が足りません…。ゲームを終了します。")
+        game["playing"] = False
+        new_price, getMoney, profit, urine = sell(game["syojiPrice"], game["getList"])
+        st.write(f"売却価格: {getMoney}円")
+        st.write(f"最終所持金: {new_price}円 ({'利益' if profit >= 0 else '損失'}: {abs(profit)}円)")
