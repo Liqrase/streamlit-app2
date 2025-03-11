@@ -68,6 +68,9 @@ if game["playing"]:
         st.write("ゲームを終了しました。")
         st.write(f"売却価格: {getMoney}円")
         st.write(f"最終所持金: {new_price}円 ({'利益' if profit >= 0 else '損失'}: {abs(profit)}円)")
+        if st.button("再スタート"):
+            st.session_state.game = initialize_game()
+            st.experimental_rerun()
     
     if game["syojiPrice"] >= 100:
         x = st.slider("右に何マス進みますか？", min_value=1, max_value=10, step=1)
@@ -98,3 +101,6 @@ if game["playing"]:
         new_price, getMoney, profit, urine = sell(game["syojiPrice"], game["getList"])
         st.write(f"売却価格: {getMoney}円")
         st.write(f"最終所持金: {new_price}円 ({'利益' if profit >= 0 else '損失'}: {abs(profit)}円)")
+        if st.button("再スタート"):
+            st.session_state.game = initialize_game()
+            st.experimental_rerun()
